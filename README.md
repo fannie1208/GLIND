@@ -8,7 +8,9 @@ Related material: [[Paper]()], [[Blog]()]
 
 [2024.05.02] We release the code for the model for three settings: Observed Geometries, Partially Observed Geometries and Unobserved Geometries. More detailed info will be updated soon.
 
-## Model and Results
+## Datasets
+
+One can download the datasets (Arxiv, Twitch, Cifar, STL, DPPIN) from the google drive link below:
 
 ## Model and Results
 
