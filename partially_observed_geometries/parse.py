@@ -1,75 +1,10 @@
-from encoders import *
 from data_utils import normalize
-
-
-def parse_method(args, dataset, n, c, d, device):
-    if args.method == 'link':
-        model = LINK(n, c).to(device)
-    elif args.method == 'gcn':
-        if args.dataset == 'ogbn-proteins':
-            # Pre-compute GCN normalization.
-            dataset.graph['edge_index'] = normalize(
-                dataset.graph['edge_index'])
-            model = GCN(in_channels=d,
-                        hidden_channels=args.hidden_channels,
-                        out_channels=c,
-                        dropout=args.dropout,
-                        use_bn=args.use_bn).to(device)
-        else:
-            model = GCN(in_channels=d,
-                        hidden_channels=args.hidden_channels,
-                        out_channels=c,
-                        num_layers=args.num_layers,
-                        dropout=args.dropout,
-                        use_bn=args.use_bn).to(device)
-    elif args.method == 'mlp' or args.method == 'cs':
-        model = MLP(in_channels=d, hidden_channels=args.hidden_channels,
-                    out_channels=c, num_layers=args.num_layers,
-                    dropout=args.dropout).to(device)
-    elif args.method == 'sgc':
-        if args.cached:
-            model = SGC(in_channels=d, out_channels=c,
-                        hops=args.hops).to(device)
-        else:
-            model = SGCMem(in_channels=d, out_channels=c,
-                           hops=args.hops).to(device)
-    elif args.method == 'gprgnn':
-        model = GPRGNN(d, args.hidden_channels, c,
-                       alpha=args.gpr_alpha).to(device)
-    elif args.method == 'appnp':
-        model = APPNP_Net(d, args.hidden_channels, c,
-                          alpha=args.gpr_alpha).to(device)
-    elif args.method == 'gat':
-        model = GAT(d, args.hidden_channels, c, num_layers=args.num_layers,
-                    dropout=args.dropout, use_bn=args.use_bn, heads=args.gat_heads, out_heads=args.out_heads).to(device)
-    elif args.method == 'lp':
-        mult_bin = args.dataset == 'ogbn-proteins'
-        model = MultiLP(c, args.lp_alpha, args.hops, mult_bin=mult_bin)
-    elif args.method == 'mixhop':
-        model = MixHop(d, args.hidden_channels, c, num_layers=args.num_layers,
-                       dropout=args.dropout, hops=args.hops).to(device)
-    elif args.method == 'gcnjk':
-        model = GCNJK(d, args.hidden_channels, c, num_layers=args.num_layers,
-                      dropout=args.dropout, jk_type=args.jk_type).to(device)
-    elif args.method == 'gatjk':
-        model = GATJK(d, args.hidden_channels, c, num_layers=args.num_layers,
-                      dropout=args.dropout, heads=args.gat_heads,
-                      jk_type=args.jk_type).to(device)
-    elif args.method == 'h2gcn':
-        model = H2GCN(d, args.hidden_channels, c, dataset.graph['edge_index'],
-                      dataset.graph['num_nodes'],
-                      num_layers=args.num_layers, dropout=args.dropout,
-                      num_mlp_layers=args.num_mlp_layers).to(device)
-    else:
-        raise ValueError('Invalid method')
-    return model
 
 
 def parser_add_main_args(parser):
     # setup and protocol
-    parser.add_argument('--dataset', type=str, default='cora')
     parser.add_argument('--data_dir', type=str,
-                        default='/mnt/nas/home/niefan/ODgraph-energy/data/')
+                        default='../../../OODgraph-GNNSafe/data/')
     parser.add_argument('--device', type=int, default=0,
                         help='which gpu to use if any (default: 0)')
     parser.add_argument('--cpu', action='store_true')
@@ -135,13 +70,13 @@ def parser_add_main_args(parser):
                         help='steps for graph learner before one step for GNN')
     parser.add_argument('--num_sample', type=int, default=5,
                         help='num of samples for each node with graph edit')
-    parser.add_argument('--beta', type=float, default=2.0,
+    parser.add_argument('--eerm_beta', type=float, default=2.0,
                         help='weight for mean of risks from multiple domains')
     parser.add_argument('--lr_a', type=float, default=0.005,
                         help='learning rate for graph edit model')
 
     #ours
-    parser.add_argument('--backbone_type', type=str, default='gcn', choices=['gcn', 'sage', 'gat'])
+    parser.add_argument('--backbone_type', type=str, default='gcn', choices=['gcn', 'sage', 'gat', 'difformer'])
     parser.add_argument('--K', type=int, default=3,
                         help='num of domains, each for one graph convolution filter')
     parser.add_argument('--tau', type=float, default=1,
@@ -151,10 +86,29 @@ def parser_add_main_args(parser):
     parser.add_argument('--lamda', type=float, default=1.0,
                         help='weight for regularlization')
     parser.add_argument('--variant', action='store_true',help='set to use variant')
+    parser.add_argument('--r', type=float, default=0.01,
+                        help='ratio for mixture')
+
+    # DPPIN
+    parser.add_argument('--window', type=int, default=10, help='number of past timestamps')
+    parser.add_argument('--train_num', type=int, default=4, help='number of training environment')
+    parser.add_argument('--train_ratio', type=float, default=0.8, help='ratio of training samples')
+    parser.add_argument('--valid_ratio', type=float, default=0.8, help='ratio of validation samples')
+
+    # GraphGPS
+    parser.add_argument('--gps_heads', type=int, default=8, help='number of heads in GraphGPS')
+    parser.add_argument('--attn_dropout', type=float, default=0, help='attention dropout in GraphGPS')
+
+    # DIFFormer
+    parser.add_argument('--alpha', type=float, default=0.5, help='weight for residual link')
+    parser.add_argument('--num_heads', type=int, default=1,help='number of heads for attention')
+    parser.add_argument('--use_residual', action='store_true', help='use residual link for each GNN layer')
+    parser.add_argument('--use_weight', action='store_true', help='use weight for GNN convolution')
+    parser.add_argument('--kernel', type=str, default='simple', choices=['simple', 'sigmoid'])
 
     # training
-    parser.add_argument('--batch_size', type=int, default=2048)
-    parser.add_argument('--weight_decay', type=float, default=5e-4)
+    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--weight_decay', type=float, default=0)
     parser.add_argument('--dropout', type=float, default=0.0)
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--use_bn', action='store_true', help='use batch norm')
@@ -166,3 +120,5 @@ def parser_add_main_args(parser):
                         help='set to use faster sgc')
     parser.add_argument('--print_prop', action='store_true',
                         help='print proportions of predicted class')
+    parser.add_argument('--save_result', action='store_true', help='save results')
+
