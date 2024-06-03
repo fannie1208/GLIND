@@ -20,11 +20,17 @@ We propose a geometry diffusion model that is optimized by a new learning object
 
 ![image](https://github.com/fannie1208/GLIND/assets/89764090/0240e933-a4b3-483e-9fff-8174677c83e9)
 
-The following tables present the results of generalization with **observed**, **partially observed** and **unobserved** data geometries.
+The following tables present the results of generalization with different data geometries.
+
+### Generalization with Observed Geometries.
 
 ![image](https://github.com/fannie1208/GLIND/assets/89764090/ea2c785b-7011-4d04-b8c8-5a328d33f984)
 
+### Generalization with Partially Observed Geometries.
+
 ![image](https://github.com/fannie1208/GLIND/assets/89764090/e7a18465-22e0-4c25-aaac-41bf2bb687b8)
+
+### Generalization with Unobserved Geometries.
 
 ![image](https://github.com/fannie1208/GLIND/assets/89764090/89313ec2-54bc-47e5-8dba-61ffa62f7f17)
 
