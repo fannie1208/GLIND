@@ -94,26 +94,26 @@ class GLINDConv(nn.Module):
         adj = SparseTensor(row=adj[0], col=adj[1], value=spm, sparse_sizes=size)
         return matmul(adj, h)
 
-    def forward(self, x, adj, z, weights=None):
+    def forward(self, x, adj, h, weights=None):
         if weights == None:
             weights = self.weights
         if self.backbone_type == 'gcn':
             if not self.variant:
-                hi = gcn_conv(x, adj)
+                zi = gcn_conv(x, adj)
             else:
                 adj = torch.sparse_coo_tensor(adj, torch.ones(adj.shape[1]).to(self.device), size=(x.shape[0],x.shape[0])).to(self.device)
-                hi = torch.sparse.mm(adj, x)
-            hi = torch.cat([hi, x], 1)
-            hi = hi.unsqueeze(0).repeat(self.K, 1, 1)  # [K, N, D*2]
-            outputs = torch.matmul(hi, weights) # [K, N, D]
+                zi = torch.sparse.mm(adj, x)
+            zi = torch.cat([zi, x], 1)
+            zi = zi.unsqueeze(0).repeat(self.K, 1, 1)  # [K, N, D*2]
+            outputs = torch.matmul(zi, weights) # [K, N, D]
             outputs = outputs.transpose(1, 0)  # [N, K, D]
         elif self.backbone_type == 'gat':
-            h = x.unsqueeze(0).repeat(self.K, 1, 1)  # [K, N, D]
+            z = x.unsqueeze(0).repeat(self.K, 1, 1)  # [K, N, D]
             N = x.size()[0]
 
             adj, _ = remove_self_loops(adj)
             adj, _ = add_self_loops(adj, num_nodes=N)
-            edge_h = torch.cat((h[:, adj[0, :], :], h[:, adj[1, :], :]), dim=2)  # [K, E, 2*D]
+            edge_h = torch.cat((z[:, adj[0, :], :], z[:, adj[1, :], :]), dim=2)  # [K, E, 2*D]
             logits = self.leakyrelu(torch.matmul(edge_h, self.a)).squeeze(2)
             logits_max , _ = torch.max(logits, dim=1, keepdim=True)
             edge_e = torch.exp(logits-logits_max)  # [K, E]
@@ -124,40 +124,39 @@ class GLINDConv(nn.Module):
                 edge_e_k = edge_e[k, :] # [E]
                 e_expsum_k = self.specialspmm(adj, edge_e_k, torch.Size([N, N]), torch.ones(N, 1).cuda()) + eps
                 assert not torch.isnan(e_expsum_k).any()
-                hi_k = self.specialspmm(adj, edge_e_k, torch.Size([N, N]), h[k])
-                hi_k = torch.true_divide(hi_k, e_expsum_k)  # [N, D]
-                outputs.append(hi_k)
+                zi_k = self.specialspmm(adj, edge_e_k, torch.Size([N, N]), z[k])
+                zi_k = torch.true_divide(zi_k, e_expsum_k)  # [N, D]
+                outputs.append(zi_k)
             outputs = torch.stack(outputs, dim=0) # [N, K, D]
-            outputs = torch.cat([outputs, h], 2) # [N, K, D*2]
+            outputs = torch.cat([outputs, z], 2) # [N, K, D*2]
             outputs = torch.matmul(outputs, weights) # [K, N, D]
             outputs = outputs.transpose(1, 0)  # [N, K, D]
         elif self.backbone_type == 'difformer':
             if not self.variant:
-                hi_1 = gcn_conv(x, adj)
+                zi_1 = gcn_conv(x, adj)
             else:
                 adj = torch.sparse_coo_tensor(adj, torch.ones(adj.shape[1]).to(self.device), size=(x.shape[0],x.shape[0])).to(self.device)
-                hi_1 = torch.sparse.mm(adj, x)
+                zi_1 = torch.sparse.mm(adj, x)
             # hi_2 = self.attn_conv(x, n_nodes=None, block_wise=False)
-            hi_1 = hi_1.unsqueeze(0).repeat(self.K, 1, 1)
+            zi_1 = zi_1.unsqueeze(0).repeat(self.K, 1, 1)
             xi = x.unsqueeze(0).repeat(self.K, 1, 1)  # [K, N, D]
             outputs = []
             for k in range(self.K):
-                hi_k = xi[k]
-                hi_k = self.attn_conv[k](hi_k, n_nodes=None, block_wise=False)
-                outputs.append(hi_k)
-            hi_2 = torch.stack(outputs, dim=0) # [K, N, D]
-            hi = (hi_1 + hi_2) / 2
+                zi_k = xi[k]
+                zi_k = self.attn_conv[k](zi_k, n_nodes=None, block_wise=False)
+                outputs.append(zi_k)
+            zi_2 = torch.stack(outputs, dim=0) # [K, N, D]
+            zi = (zi_1 + zi_2) / 2
             if self.residual:
-                hi = self.alpha * hi + (1-self.alpha) * x
+                zi = self.alpha * zi + (1-self.alpha) * x
             if self.use_bn:
-                hi = self.bn(hi)
-            hi = torch.cat([hi, xi], 2)
-            #hi = hi.unsqueeze(0).repeat(self.K, 1, 1)  # [K, N, D*2]
-            outputs = torch.matmul(hi, weights) # [K, N, D]
+                zi = self.bn(zi)
+            zi = torch.cat([zi, xi], 2)
+            outputs = torch.matmul(zi, weights) # [K, N, D]
             outputs = outputs.transpose(1, 0)  # [N, K, D]
 
-        zs = z.unsqueeze(2).repeat(1, 1, self.out_features)  # [N, K, D]
-        output = torch.sum(torch.mul(zs, outputs), dim=1)  # [N, D]
+        hs = h.unsqueeze(2).repeat(1, 1, self.out_features)  # [N, K, D]
+        output = torch.sum(torch.mul(hs, outputs), dim=1)  # [N, D]
 
         if self.residual:
             output = output + x
@@ -185,7 +184,6 @@ class GLIND(nn.Module):
         self.num_layers = args.num_layers
         self.tau = args.tau
         self.context_type = args.context_type
-        self.prior_type = args.prior
         self.r = args.r
         self.device = device
 
@@ -200,16 +198,16 @@ class GLIND(nn.Module):
     def forward(self, x, adj, idx=None, training=False):
         self.training = training
         x = F.dropout(x, self.dropout, training=self.training)
-        h = self.act_fn(self.fcs[0](x))
-        h0 = h.clone()
+        z = self.act_fn(self.fcs[0](x))
+        z0 = z.clone()
 
         if self.training:
             n = x.shape[0]
             p = adj.size(1) / n / (n - 1)
             r = int(self.r * n) if self.r <= 1 else int(self.r)
             selected_nodes = torch.randperm(n)[:r]
-            h_r = h.clone()[selected_nodes]
-            h_r0 = h_r.clone()
+            z_r = z.clone()[selected_nodes]
+            z_r0 = z_r.clone()
             edge_index_r = erdos_renyi_graph(num_nodes = r, edge_prob = p)
             values_r = torch.ones(edge_index_r.size(1))
             g_r = (values_r.numpy(), (edge_index_r[0].numpy(), edge_index_r[1].numpy()))
@@ -220,50 +218,46 @@ class GLIND(nn.Module):
             logits = []
             
             for i, con in enumerate(self.convs):
-                h_r = F.dropout(h_r, self.dropout, training=self.training)
+                z_r = F.dropout(z_r, self.dropout, training=self.training)
                 if self.context_type == 'node':
-                    logit_r = self.context_enc[i](h_r)
+                    logit_r = self.context_enc[i](z_r)
                 else:
-                    logit_r = self.context_enc[i](h_r, adj_r.coalesce().indices(), h_r0)
-                z_r = F.gumbel_softmax(logit_r, tau=self.tau, dim=-1)
-                h_r = self.act_fn(con(h_r, adj_r.coalesce().indices(), z_r))
+                    logit_r = self.context_enc[i](z_r, adj_r.coalesce().indices(), z_r0)
+                h_r = F.gumbel_softmax(logit_r, tau=self.tau, dim=-1)
+                z_r = self.act_fn(con(z_r, adj_r.coalesce().indices(), h_r))
                 logits.append(logit_r.detach())
 
         reg = 0
         for i,con in enumerate(self.convs):
-            h = F.dropout(h, self.dropout, training=self.training)
+            z = F.dropout(z, self.dropout, training=self.training)
             if self.training:
                 if self.context_type == 'node':
-                    logit = self.context_enc[i](h)
+                    logit = self.context_enc[i](z)
                 else:
-                    logit = self.context_enc[i](h, adj, h0)
-                z = F.gumbel_softmax(logit, tau=self.tau, dim=-1)
-                if self.prior_type == 'uniform':
-                    reg += self.reg_loss(z, logit)
-                    #reg += self.reg_loss(z, logit)
-                elif self.prior_type == 'mixture':
-                    reg += self.reg_loss(z, logit, logits[i])
+                    logit = self.context_enc[i](z, adj, z0)
+                h = F.gumbel_softmax(logit, tau=self.tau, dim=-1)
+                reg += self.reg_loss(h, logit, logits[i])
             else:
                 if self.context_type == 'node':
-                    z = F.softmax(self.context_enc[i](h), dim=-1)
+                    h = F.softmax(self.context_enc[i](z), dim=-1)
                 else:
-                    z = F.softmax(self.context_enc[i](h, adj, h0), dim=-1)
+                    h = F.softmax(self.context_enc[i](z, adj, z0), dim=-1)
             # h = self.act_fn(con(h, adj, z, self.weights)) # Only for ablation study
-            h = self.act_fn(con(h, adj, z))
+            z = self.act_fn(con(z, adj, h))
 
-        h = F.dropout(h, self.dropout, training=self.training)
-        out = self.fcs[-1](h)
+        z = F.dropout(z, self.dropout, training=self.training)
+        out = self.fcs[-1](z)
         if self.training:
             return out, reg / self.num_layers
         else:
             return out
 
-    def reg_loss(self, z, logit, logit_0 = None):
+    def reg_loss(self, h, logit, logit_0 = None):
         log_pi = logit - torch.logsumexp(logit, dim=-1, keepdim=True).repeat(1, logit.size(1))
         log_pi_0 = F.softmax(logit_0, dim=1).mean(dim=1, keepdim=True).log()
         log_pi_0 = torch.full((log_pi.shape[0], 1), log_pi_0[0,0].item()).to(log_pi.device)
         return torch.mean(torch.sum(
-            torch.mul(z, log_pi - log_pi_0), dim=1))
+            torch.mul(h, log_pi - log_pi_0), dim=1))
 
     def sup_loss_calc(self, y, pred, criterion, args):
         if args.dataset in ('twitch'):

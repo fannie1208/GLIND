@@ -97,7 +97,7 @@ def load_stl10(data_dir, train_num=3, train_ratio=0.5, valid_ratio=0.25):
     y = y[shuffled_indices]
     num_sample = int(num_image / 6)
 
-    synthesized_edges = torch.load('./data/stl10/edge.pt')
+    synthesized_edges = torch.load('../data/stl10/edge.pt')
     dataset = Data(x=torch.Tensor(x), edge_index=synthesized_edges, y=torch.LongTensor(y))
     dataset.num_nodes = x.shape[0]
 
@@ -132,7 +132,7 @@ def load_cifar10(data_dir, num_image=30000, train_num=3, train_ratio=0.5, valid_
     x = x[shuffled_indices]
     y = y[shuffled_indices]
     num_sample = int(num_image / 6)
-    synthesized_edges = torch.load('./data/cifar10/edge.pt')
+    synthesized_edges = torch.load('../data/cifar10/edge.pt')
     dataset = Data(x=torch.Tensor(x), edge_index=synthesized_edges, y=torch.LongTensor(y))
     dataset.num_nodes = x.shape[0]
     env = [0]*num_sample + [1]*num_sample + [2]*num_sample + [3]*num_sample + [4]*num_sample + [5]*num_sample

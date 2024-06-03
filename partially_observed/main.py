@@ -12,7 +12,7 @@ from logger import Logger, save_result
 from dataset import *
 from eval import evaluate_node_task, eval_acc, eval_rocauc, eval_f1, eval_rmse
 from parse import parser_add_main_args
-from ours import *
+from model import *
 
 # NOTE: for consistent data splits, see data_utils.rand_train_test_idx
 def fix_seed(seed):
@@ -105,5 +105,5 @@ for run in range(args.runs):
 results = logger.print_statistics_reg()
 
 ### Save results ###
-if args.save_result:
+if args.store_result:
     save_result(args, results)

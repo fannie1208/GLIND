@@ -2,7 +2,7 @@ def parser_add_main_args(parser):
     # setup and protocol
     parser.add_argument('--dataset', type=str, default='twitch')
     parser.add_argument('--data_dir', type=str,
-                        default='/mnt/nas/home/niefan/ODgraph-energy/data/')
+                        default='../data')
     parser.add_argument('--device', type=int, default=0,
                         help='which gpu to use if any (default: 0)')
     parser.add_argument('--cpu', action='store_true')
@@ -23,7 +23,6 @@ def parser_add_main_args(parser):
     parser.add_argument('--tau', type=float, default=1,
                         help='temperature for Gumbel Softmax')
     parser.add_argument('--context_type', type=str, default='node', choices=['node', 'graph'])
-    parser.add_argument('--prior', type=str, default='uniform', choices=['uniform', 'mixture'])
     parser.add_argument('--lamda', type=float, default=1.0,
                         help='weight for regularlization')
     parser.add_argument('--variant', action='store_true',help='set to use variant')

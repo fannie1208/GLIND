@@ -183,7 +183,6 @@ class GLIND(nn.Module):
         self.num_layers = args.num_layers
         self.tau = args.tau
         self.context_type = args.context_type
-        self.prior_type = args.prior
         self.r = args.r
         self.use_bn = args.use_bn
         self.device = device
@@ -207,7 +206,7 @@ class GLIND(nn.Module):
         h = self.act_fn(x)
         h0 = h.clone()
 
-        if self.prior_type == 'mixture' and self.training:
+        if self.training:
             n = x.shape[0]
             p = adj.size(1) / n / (n - 1)
             #print(n,adj.size(1))
@@ -242,17 +241,12 @@ class GLIND(nn.Module):
                 else:
                     logit = self.context_enc[i](h, adj, h0)
                 z = F.gumbel_softmax(logit, tau=self.tau, dim=-1)
-                if self.prior_type == 'uniform':
-                    reg += self.reg_loss(z, logit)
-                    #reg += self.reg_loss(z, logit)
-                elif self.prior_type == 'mixture':
-                    reg += self.reg_loss(z, logit, logits[i])
+                reg += self.reg_loss(z, logit, logits[i])
             else:
                 if self.context_type == 'node':
                     z = F.softmax(self.context_enc[i](h), dim=-1)
                 else:
                     z = F.softmax(self.context_enc[i](h, adj, h0), dim=-1)
-            # h = self.act_fn(con(h, adj, z, self.weights)) # Only for ablation study
             h = self.act_fn(con(h, adj, z))
 
         h = F.dropout(h, self.dropout, training=self.training)
@@ -263,16 +257,11 @@ class GLIND(nn.Module):
             return out
 
     def reg_loss(self, z, logit, logit_0 = None):
-        if self.prior_type == 'uniform':
-            log_pi = logit - torch.logsumexp(logit, dim=-1, keepdim=True).repeat(1, logit.size(1))
-            return torch.mean(torch.sum(
-                torch.mul(z, log_pi), dim=1))
-        elif self.prior_type == 'mixture':
-            log_pi = logit - torch.logsumexp(logit, dim=-1, keepdim=True).repeat(1, logit.size(1))
-            log_pi_0 = F.softmax(logit_0, dim=1).mean(dim=1, keepdim=True).log()
-            log_pi_0 = torch.full((log_pi.shape[0], 1), log_pi_0[0,0].item()).to(log_pi.device)
-            return torch.mean(torch.sum(
-                torch.mul(z, log_pi - log_pi_0), dim=1))
+        log_pi = logit - torch.logsumexp(logit, dim=-1, keepdim=True).repeat(1, logit.size(1))
+        log_pi_0 = F.softmax(logit_0, dim=1).mean(dim=1, keepdim=True).log()
+        log_pi_0 = torch.full((log_pi.shape[0], 1), log_pi_0[0,0].item()).to(log_pi.device)
+        return torch.mean(torch.sum(
+            torch.mul(z, log_pi - log_pi_0), dim=1))
 
     def sup_loss_calc(self, y, pred, criterion, args):
         y = y.unsqueeze(1).float()

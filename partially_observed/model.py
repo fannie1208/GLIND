@@ -260,13 +260,12 @@ class GLIND(nn.Module):
             torch.mul(h, log_pi - log_pi_0), dim=1))
 
     def sup_loss_calc(self, y, pred, criterion, args):
-        out = F.log_softmax(pred, dim=1)
-        target = y.squeeze(1)
-        loss = criterion(out, target)
+        y = y.unsqueeze(1).float()
+        loss = criterion(pred, y)
         return loss
 
     def loss_compute(self, d, criterion, args, idx=None):
         logits, reg_loss = self.forward(d.x, d.edge_index, idx, training=True)
-        sup_loss = self.sup_loss_calc(d.y[d.train_idx], logits[d.train_idx], criterion, args)
+        sup_loss = self.sup_loss_calc(d.node_rgs_y, logits, criterion, args)
         loss = sup_loss + args.lamda * reg_loss
         return loss

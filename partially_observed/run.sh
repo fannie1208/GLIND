@@ -1,0 +1,1 @@
+python main.py --num_heads 1 --lamda 1 --K 4 --backbone difformer --weight 0 --use_residual --use_weight --epochs 1500 --store

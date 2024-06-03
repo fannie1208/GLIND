@@ -28,7 +28,7 @@ def load_twitch_dataset(data_dir, train_num=3, train_ratio=0.5, valid_ratio=0.25
     node_idx_list = []
     idx_shift = 0
     for i, g in enumerate(sub_graphs):
-        torch_dataset = Twitch(root=f'{data_dir}Twitch',
+        torch_dataset = Twitch(root=f'{data_dir}/Twitch',
                               name=g, transform=transform)
         data = torch_dataset[0]
         x, edge_index, y = data.x, data.edge_index, data.y

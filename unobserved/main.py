@@ -43,9 +43,9 @@ else:
 
 ### Load and preprocess data ###
 if args.dataset == 'cifar10':
-    dataset = load_cifar10('./data', num_image=30000)
+    dataset = load_cifar10(args.data_dir, num_image=30000)
 elif args.dataset == 'stl':
-    dataset = load_stl10('./data')
+    dataset = load_stl10(args.data_dir)
 else:
     raise ValueError('Invalid dataname')
 

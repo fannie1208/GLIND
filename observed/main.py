@@ -69,7 +69,6 @@ print(m)
 print(f'[INFO] env numbers: {dataset.env_num} train env numbers: {dataset.train_env_num}')
 
 ### Load method ###
-is_multilabel = args.dataset in ('proteins', 'ppi')
 
 model = GLIND(d, c, args, device).to(device)
 

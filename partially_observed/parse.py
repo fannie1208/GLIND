@@ -4,7 +4,7 @@ from data_utils import normalize
 def parser_add_main_args(parser):
     # setup and protocol
     parser.add_argument('--data_dir', type=str,
-                        default='../../../OODgraph-GNNSafe/data/')
+                        default='../data')
     parser.add_argument('--device', type=int, default=0,
                         help='which gpu to use if any (default: 0)')
     parser.add_argument('--cpu', action='store_true')
@@ -36,45 +36,6 @@ def parser_add_main_args(parser):
     parser.add_argument('--num_mlp_layers', type=int, default=1,
                         help='number of mlp layers in h2gcn')
 
-    #irm
-    parser.add_argument('--irm_lambda', default=1,
-                        type=float, help='lambda for irm')
-    parser.add_argument('--irm_penalty_anneal_iter', default=500,
-                        help='the step to reset optimizer in irm')
-
-    parser.add_argument('--dann_alpha', type=float,
-                        default=0.2, help='alpha for dann')
-    parser.add_argument('--coral_penalty_weight', type=float, default=0.001,
-                        help='penalty weight for coral loss')
-    parser.add_argument('--groupdro_step_size', type=float, default=0.01,
-                        help='step size for groupdro')
-
-    #mixup
-    parser.add_argument('--mixup_prob', default=0.4, type=float,
-                        help='prob for using batch mixup')
-    parser.add_argument('--mixup_alpha', default=0.2, type=float,
-                        help='alpha for beta distribution in mixup')
-    parser.add_argument('--label_smooth_val', default=0.1, type=float,
-                        help='the smooth value for label smooth loss in mixup')
-
-    #srgnn
-    parser.add_argument('--srgnn_alpha', type=float,
-                        default=1, help='alpha for srgnn')
-    parser.add_argument('--kmm_beta', type=float, default=0.2,
-                        help='beta for calculating KMM weight.')
-
-    #eerm
-    parser.add_argument('--env_K', type=int, default=3,
-                        help='num of views for data augmentation')
-    parser.add_argument('--T', type=int, default=1,
-                        help='steps for graph learner before one step for GNN')
-    parser.add_argument('--num_sample', type=int, default=5,
-                        help='num of samples for each node with graph edit')
-    parser.add_argument('--eerm_beta', type=float, default=2.0,
-                        help='weight for mean of risks from multiple domains')
-    parser.add_argument('--lr_a', type=float, default=0.005,
-                        help='learning rate for graph edit model')
-
     #ours
     parser.add_argument('--backbone_type', type=str, default='gcn', choices=['gcn', 'sage', 'gat', 'difformer'])
     parser.add_argument('--K', type=int, default=3,
@@ -82,7 +43,6 @@ def parser_add_main_args(parser):
     parser.add_argument('--tau', type=float, default=1,
                         help='temperature for Gumbel Softmax')
     parser.add_argument('--context_type', type=str, default='node', choices=['node', 'graph'])
-    parser.add_argument('--prior', type=str, default='uniform', choices=['uniform', 'mixture'])
     parser.add_argument('--lamda', type=float, default=1.0,
                         help='weight for regularlization')
     parser.add_argument('--variant', action='store_true',help='set to use variant')
@@ -120,5 +80,5 @@ def parser_add_main_args(parser):
                         help='set to use faster sgc')
     parser.add_argument('--print_prop', action='store_true',
                         help='print proportions of predicted class')
-    parser.add_argument('--save_result', action='store_true', help='save results')
+    parser.add_argument('--store_result', action='store_true', help='save results')
 

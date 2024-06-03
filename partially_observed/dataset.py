@@ -24,20 +24,6 @@ import csv
 import json
 
 
-def create_sbm_dataset(data, p_ii=1.5, p_ij=0.5):
-    n = data.num_nodes
-
-    d = data.edge_index.size(1) / data.num_nodes / (data.num_nodes - 1)
-    num_blocks = int(data.y.max()) + 1
-    p_ii, p_ij = p_ii * d, p_ij * d
-    block_size = n // num_blocks
-    block_sizes = [block_size for _ in range(num_blocks-1)] + [block_size + n % block_size]
-    edge_probs = torch.ones((num_blocks, num_blocks)) * p_ij
-    edge_probs[torch.arange(num_blocks), torch.arange(num_blocks)] = p_ii
-    edge_index = stochastic_blockmodel_graph(block_sizes, edge_probs)
-
-    return edge_index
-
 class DppinDataset(InMemoryDataset):
     def __init__(self, data_dir, root, mode='train', window=10, train_num=4, valid_num=1, transform=None, pre_transform=None):
         self.splits = ['train', 'valid', 'test0','test1','test2','test3','test4','test5','test6','test7']
