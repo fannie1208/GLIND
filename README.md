@@ -8,6 +8,8 @@ Related material: [[Paper]()], [[Blog]()]
 
 [2024.06.03] We release the code for our model on real-world datasets that involve Observed Geometries, Partially Observed Geometries and Unobserved Geometries. More detailed info will be updated soon.
 
+[2024.06.04] We upload the datasets (Arxiv, Twitch, Cifar, STL, DPPIN).
+
 ## Datasets
 
 One can download the datasets (Arxiv, Twitch, Cifar, STL, DPPIN) from the google drive link below:
