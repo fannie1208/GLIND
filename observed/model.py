@@ -259,16 +259,11 @@ class GLIND(nn.Module):
             return out
 
     def reg_loss(self, z, logit, logit_0 = None):
-        if self.prior_type == 'uniform':
-            log_pi = logit - torch.logsumexp(logit, dim=-1, keepdim=True).repeat(1, logit.size(1))
-            return torch.mean(torch.sum(
-                torch.mul(z, log_pi), dim=1))
-        elif self.prior_type == 'mixture':
-            log_pi = logit - torch.logsumexp(logit, dim=-1, keepdim=True).repeat(1, logit.size(1))
-            log_pi_0 = F.softmax(logit_0, dim=1).mean(dim=1, keepdim=True).log()
-            log_pi_0 = torch.full((log_pi.shape[0], 1), log_pi_0[0,0].item()).to(log_pi.device)
-            return torch.mean(torch.sum(
-                torch.mul(z, log_pi - log_pi_0), dim=1))
+        log_pi = logit - torch.logsumexp(logit, dim=-1, keepdim=True).repeat(1, logit.size(1))
+        log_pi_0 = F.softmax(logit_0, dim=1).mean(dim=1, keepdim=True).log()
+        log_pi_0 = torch.full((log_pi.shape[0], 1), log_pi_0[0,0].item()).to(log_pi.device)
+        return torch.mean(torch.sum(
+            torch.mul(z, log_pi - log_pi_0), dim=1))
 
     def sup_loss_calc(self, y, pred, criterion, args):
         if args.dataset in ('twitch'):

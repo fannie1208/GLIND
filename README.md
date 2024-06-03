@@ -1,12 +1,12 @@
 # GLIND
 
-The official implementation for ICML2024 paper "Learning Divergence Fields for Generalization with Data Geometries"
+The official implementation for ICML2024 paper "Learning Divergence Fields for Shift-Robust Graph Representations"
 
 Related material: [[Paper]()], [[Blog]()]
 
 ## What's news
 
-[2024.05.02] We release the code for the model for three settings: Observed Geometries, Partially Observed Geometries and Unobserved Geometries. More detailed info will be updated soon.
+[2024.06.03] We release the code for the model for three settings: Observed Geometries, Partially Observed Geometries and Unobserved Geometries. More detailed info will be updated soon.
 
 ## Datasets
 
