@@ -12,6 +12,8 @@ Related material: [[Paper]()], [[Blog]()]
 
 One can download the datasets (Arxiv, Twitch, Cifar, STL, DPPIN) from the google drive link below:
 
+https://drive.google.com/drive/folders/1LctHB8_8fRqp3jq9kU3DryHXwA5PCihC
+
 ## Model and Results
 
 ![image](https://github.com/fannie1208/GLIND/assets/89764090/ea2c785b-7011-4d04-b8c8-5a328d33f984)
