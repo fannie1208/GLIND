@@ -6,7 +6,7 @@ Related material: [[Paper]()], [[Blog]()]
 
 ## What's news
 
-[2024.06.03] We release the code for the model for three settings: Observed Geometries, Partially Observed Geometries and Unobserved Geometries. More detailed info will be updated soon.
+[2024.06.03] We release the code for our model on real-world datasets that involve Observed Geometries, Partially Observed Geometries and Unobserved Geometries. More detailed info will be updated soon.
 
 ## Datasets
 
@@ -15,6 +15,10 @@ One can download the datasets (Arxiv, Twitch, Cifar, STL, DPPIN) from the google
 https://drive.google.com/drive/folders/1LctHB8_8fRqp3jq9kU3DryHXwA5PCihC
 
 ## Model and Results
+
+We propose a geometry diffusion model that is optimized by a new learning objective (comprised of a supervised term and a regularization term) for the generalization problem with interdependent data.
+
+![image](https://github.com/fannie1208/GLIND/assets/89764090/0240e933-a4b3-483e-9fff-8174677c83e9)
 
 The following tables present the results of generalization with **observed**, **partially observed** and **unobserved** data geometries.
 
