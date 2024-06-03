@@ -14,6 +14,8 @@ One can download the datasets (Arxiv, Twitch, Cifar, STL, DPPIN) from the google
 
 ## Model and Results
 
+![image](https://github.com/fannie1208/GLIND/assets/89764090/ea2c785b-7011-4d04-b8c8-5a328d33f984)
+
 ## Dependence
 
 Python 3.8, PyTorch 1.13.0, PyTorch Geometric 2.1.0, NumPy 1.23.4
