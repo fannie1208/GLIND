@@ -60,4 +60,6 @@ If you find our code and model useful, please consider citing our work. Thank yo
 
 ### Acknowledgement
 
-The training pipeline for 
+The training pipeline for `observed` (Arxiv and Twitch) is based on [EERM](https://github.com/qitianwu/GraphOOD-EERM).
+
+The training pipeline for `unobserved` (STL and CIFAR) is based on [DIFFormer](https://github.com/qitianwu/DIFFormer).
