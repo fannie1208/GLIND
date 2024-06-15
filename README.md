@@ -2,7 +2,7 @@
 
 The official implementation for ICML2024 paper "Learning Divergence Fields for Shift-Robust Graph Representations"
 
-Related material: [[Paper]()], [[Blog]()]
+Related material: [[Paper](https://arxiv.org/pdf/2406.04963)], [[Blog]()]
 
 ## What's news
 
@@ -47,4 +47,17 @@ Please refer to the bash script `run.sh` in each folder for running the training
 
 ### Citation
 
-If you find our code and model useful, please cite our work. Thank you!
+If you find our code and model useful, please consider citing our work. Thank you!
+
+```bibtex
+      @inproceedings{wu2024glind,
+      title = {Learning Divergence Fields for Shift-Robust Graph Representations},
+      author = {Qitian Wu and Fan Nie and Chenxiao Yang and Junchi Yan},
+      booktitle = {International Conference on Machine Learning (ICML)},
+      year = {2024}
+      }
+```
+
+### Acknowledgement
+
+The training pipeline for 
