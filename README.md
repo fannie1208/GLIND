@@ -4,6 +4,12 @@ The official implementation for ICML2024 paper "Learning Divergence Fields for S
 
 Related material: [[Paper](https://arxiv.org/pdf/2406.04963)], [[Blog]()]
 
+### Acknowledgement
+
+The training pipeline for `observed` (Arxiv and Twitch) is based on [EERM](https://github.com/qitianwu/GraphOOD-EERM).
+
+The training pipeline for `unobserved` (STL and CIFAR) is based on [DIFFormer](https://github.com/qitianwu/DIFFormer).
+
 ## What's news
 
 [2024.06.03] We release the code for our model on real-world datasets that involve Observed Geometries, Partially Observed Geometries and Unobserved Geometries. More detailed info will be updated soon.
@@ -57,9 +63,3 @@ If you find our code and model useful, please consider citing our work. Thank yo
       year = {2024}
       }
 ```
-
-### Acknowledgement
-
-The training pipeline for `observed` (Arxiv and Twitch) is based on [EERM](https://github.com/qitianwu/GraphOOD-EERM).
-
-The training pipeline for `unobserved` (STL and CIFAR) is based on [DIFFormer](https://github.com/qitianwu/DIFFormer).
