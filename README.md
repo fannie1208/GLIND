@@ -2,7 +2,7 @@
 
 The official implementation for ICML2024 paper "Learning Divergence Fields for Shift-Robust Graph Representations"
 
-Related material: [[Paper](https://arxiv.org/pdf/2406.04963)], [[Blog (Chinese)](https://zhuanlan.zhihu.com/p/709125359)], [[Blog (English)(https://medium.com/towards-data-science/towards-generalization-on-graphs-from-invariance-to-causality-c81a174ac37b)]], [[Slides](https://qitianwu.github.io/assets/publications/icml2024-glind/slides.pdf)]
+Related material: [[Paper](https://arxiv.org/pdf/2406.04963)], [[Blog (Chinese)](https://zhuanlan.zhihu.com/p/709125359)], [[Blog (English)](https://medium.com/towards-data-science/towards-generalization-on-graphs-from-invariance-to-causality-c81a174ac37b)], [[Slides](https://qitianwu.github.io/assets/publications/icml2024-glind/slides.pdf)]
 
 ## Acknowledgement
 
